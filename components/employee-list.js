@@ -12,16 +12,43 @@ class EmployeeList extends LitElement {
     :host {
       display: block;
       padding: 24px;
+     
     }
     table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th,
-    td {
-      padding: 16px;
-      border: 1px solid #ddd;
-    }
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden; /* köşe radius düzgün çıksın diye */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  background: #ffffff;
+  padding:25;
+}
+th {
+ color:orange;
+  text-align: left;
+  border-bottom: 2px solid #ccc;
+} 
+td {
+  font-family:'arial' , 'sans-serif';
+  font-size:1.3em;
+ 
+}
+.actions  {
+  display:flex;
+  font-family:'arial' , 'sans-serif';
+  font-size:1.3em;
+}
+.actions button  {
+  padding:1em;
+  margin:0.5em;
+  border-radius:1em;
+  display:flex;
+  font-family:'arial' , 'sans-serif';
+  border: 2px solid #f5f1f1;
+}
+tr:hover td {
+  background: #fafafa;
+}
     .controls {
       display: flex;
       gap: 8px;
@@ -77,11 +104,14 @@ class EmployeeList extends LitElement {
       <table>
         <thead>
           <tr>
-            <th>First</th>
-            <th>Last</th>
-            <th>Email</th>
-            <th>Dept</th>
-            <th>Pos</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Date of Employment</th>
+            <th>Date of Birth</th>
+            <th>Phone Number</th>
+            <th>Email Address</th>
+            <th>Department</th>
+            <th>Position</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -93,7 +123,7 @@ class EmployeeList extends LitElement {
               <td>${e.email}</td>
               <td>${e.department}</td>
               <td>${e.position}</td>
-              <td>
+              <td class="actions">
                 <button @click=${() => this._onEdit(e.id)}>Edit</button>
                 <button @click=${() => this._onDelete(e.id)}>Delete</button>
               </td>
