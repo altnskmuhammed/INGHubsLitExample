@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+    :root {
+      --app-background: #f0f2f5;
+      --app-text: #222;
+      --primary-color: #1976d2;
+      --secondary-color: #ff9800;
+      --border-radius: 8px;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: var(--app-background);
+      color: var(--app-text);
+    }
+
+    a {
+      text-decoration: none;
+      color: var(--primary-color);
+    }
+
+    a:hover {
+      color: var(--secondary-color);
+    }
+  </style>
+<title>Employee Management (Lit)</title>
+<script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+<script src="../node_modules/lit/polyfill-support.js"></script>
+<script type="module" src="/main.js" defer></script>
+</head>
+<body>
+<nav-menu></nav-menu>
+<main id="outlet"></main>
+</body>
+</html>
