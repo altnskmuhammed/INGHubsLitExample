@@ -1,58 +1,110 @@
 import { LitElement, html, css } from 'lit';
-// Örn: store import et
- import { employeeStore } from '../store/employeeStore.js';
+import { employeeStore } from '../store/employeeStore.js';
 
 class EmployeeList extends LitElement {
   static properties = {
     page: { type: Number },
     query: { type: String },
+    selected: { state: true },
   };
 
   static styles = css`
     :host {
       display: block;
-      padding: 24px;
-     
+      padding: 16px;
     }
-    table {
-  width: 100%;
-  border-collapse: collapse;
-  border-radius: 8px;
-  overflow: hidden; /* köşe radius düzgün çıksın diye */
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  background: #ffffff;
-  padding:25;
-}
-th {
- color:orange;
-  text-align: left;
-  border-bottom: 2px solid #ccc;
-} 
-td {
-  font-family:'arial' , 'sans-serif';
-  font-size:1.3em;
- 
-}
-.actions  {
-  display:flex;
-  font-family:'arial' , 'sans-serif';
-  font-size:1.3em;
-}
-.actions button  {
-  padding:1em;
-  margin:0.5em;
-  border-radius:1em;
-  display:flex;
-  font-family:'arial' , 'sans-serif';
-  border: 2px solid #f5f1f1;
-}
-tr:hover td {
-  background: #fafafa;
-}
+
     .controls {
       display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      background: #ffffff;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background-color: #f8f8f8;
+    }
+
+    th, td {
+      text-align: center;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    th {
+      color: orange;
+      border-bottom: 2px solid #ccc;
+    }
+
+    td {
+      border-bottom: 1px solid #eee;
+    }
+
+    tr:hover td {
+      background: #fafafa;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 0.5em;
+    }
+
+    .actions button {
+      padding: 0.5em 1em;
+      border-radius: 0.5em;
+      border: 1px solid #ddd;
+      cursor: pointer;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+        font-size:10px
+      }
+
+      thead {
+        display: none; /* başlık gizleniyor */
+      }
+
+      tr {
+        margin-bottom: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+
+      td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 8px;
+        border: none;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #555;
+        flex: 1;
+        text-align: left;
+      }
+
+      td:last-child {
+        justify-content: center;
+      }
     }
   `;
 
@@ -62,6 +114,7 @@ tr:hover td {
     this.pageSize = 8;
     this.page = 1;
     this.query = '';
+    this.selected = new Set();
   }
 
   connectedCallback() {
@@ -82,7 +135,7 @@ tr:hover td {
       const q = this.query.trim().toLowerCase();
       if (!q) return true;
       return (
-        [e.firstName, e.lastName, e.email, e.department, e.position]
+        [e.firstName, e.lastName, e.emailAddress, e.department, e.position]
           .join(' ')
           .toLowerCase()
           .includes(q)
@@ -93,17 +146,21 @@ tr:hover td {
     const start = (this.page - 1) * this.pageSize;
     const pageItems = filtered.slice(start, start + this.pageSize);
 
+    const allSelected = pageItems.length > 0 && pageItems.every(e => this.selected.has(e.id));
+
     return html`
       <div class="controls">
-        <input
-          placeholder="Ara isim veya email"
-          @input=${this._onSearch}
-        />
+        <input placeholder="Ara isim veya email" @input=${this._onSearch} />
         <button @click=${() => (location.href = '/add')}>Add New</button>
+        <button ?disabled=${this.selected.size === 0} @click=${this._deleteSelected}>
+          Delete Selected (${this.selected.size})
+        </button>
       </div>
+
       <table>
         <thead>
           <tr>
+            <th><input type="checkbox" .checked=${allSelected} @change=${(e) => this._toggleAll(e, pageItems)} /></th>
             <th>First Name</th>
             <th>Last Name</th>
             <th>Date of Employment</th>
@@ -117,34 +174,33 @@ tr:hover td {
         </thead>
         <tbody>
           ${pageItems.map(
-            (e) => html`<tr>
-              <td>${e.firstName}</td>
-              <td>${e.lastName}</td>
-              <td>${e.email}</td>
-              <td>${e.department}</td>
-              <td>${e.position}</td>
-              <td class="actions">
-                <button @click=${() => this._onEdit(e.id)}>Edit</button>
-                <button @click=${() => this._onDelete(e.id)}>Delete</button>
-              </td>
-            </tr>`
+            (e) => html`
+              <tr>
+                <td data-label="Select">
+                  <input type="checkbox" .checked=${this.selected.has(e.id)} @change=${(ev) => this._toggleOne(ev, e.id)} />
+                </td>
+                <td data-label="First Name">${e.firstName}</td>
+                <td data-label="Last Name">${e.lastName}</td>
+                <td data-label="Date of Employment">${e.dateOfEmployment}</td>
+                <td data-label="Date of Birth">${e.dateOfBirth}</td>
+                <td data-label="Phone Number">${e.phoneNumber}</td>
+                <td data-label="Email">${e.emailAddress}</td>
+                <td data-label="Department">${e.department}</td>
+                <td data-label="Position">${e.position}</td>
+                <td data-label="Actions" class="actions">
+                  <button @click=${() => this._onEdit(e.id)}>Edit</button>
+                  <button @click=${() => this._onDelete(e.id)}>Delete</button>
+                </td>
+              </tr>
+            `
           )}
         </tbody>
       </table>
-      <div style="margin-top:8px">
+
+      <div style="margin-top:12px">
         Page ${this.page} / ${totalPages}
-        <button
-          ?disabled=${this.page <= 1}
-          @click=${() => this._goto(this.page - 1)}
-        >
-          Prev
-        </button>
-        <button
-          ?disabled=${this.page >= totalPages}
-          @click=${() => this._goto(this.page + 1)}
-        >
-          Next
-        </button>
+        <button ?disabled=${this.page <= 1} @click=${() => this._goto(this.page - 1)}>Prev</button>
+        <button ?disabled=${this.page >= totalPages} @click=${() => this._goto(this.page + 1)}>Next</button>
       </div>
     `;
   }
@@ -162,12 +218,31 @@ tr:hover td {
     window.history.pushState({}, '', `/edit/${id}`);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }
-  
 
   async _onDelete(id) {
     const confirmed = confirm('Delete this record?');
     if (!confirmed) return;
     employeeStore.remove(id);
+    this.selected.delete(id);
+  }
+
+  _toggleOne(e, id) {
+    if (e.target.checked) this.selected.add(id);
+    else this.selected.delete(id);
+    this.requestUpdate();
+  }
+
+  _toggleAll(e, items) {
+    if (e.target.checked) items.forEach((emp) => this.selected.add(emp.id));
+    else items.forEach((emp) => this.selected.delete(emp.id));
+    this.requestUpdate();
+  }
+
+  _deleteSelected() {
+    const confirmed = confirm(`Delete ${this.selected.size} selected records?`);
+    if (!confirmed) return;
+    [...this.selected].forEach((id) => employeeStore.remove(id));
+    this.selected.clear();
   }
 }
 

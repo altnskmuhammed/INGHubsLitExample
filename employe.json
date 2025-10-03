@@ -1,0 +1,114 @@
+[
+    {
+      "id": "1",
+      "firstName": "Ahmet",
+      "lastName": "Yılmaz",
+      "dateOfEmployment": "2018-04-12",
+      "dateOfBirth": "1985-09-21",
+      "phoneNumber": "+90 5321234567",
+      "emailAddress": "ahmet.yilmaz1@example.com",
+      "department": "Tech",
+      "position": "Junior"
+    },
+    {
+      "id": "2",
+      "firstName": "Elif",
+      "lastName": "Demir",
+      "dateOfEmployment": "2020-07-19",
+      "dateOfBirth": "1992-11-02",
+      "phoneNumber": "+90 5379876543",
+      "emailAddress": "elif.demir2@example.com",
+      "department": "Analytics",
+      "position": "Senior"
+    },
+    {
+      "id": "3",
+      "firstName": "Mehmet",
+      "lastName": "Kara",
+      "dateOfEmployment": "2019-01-05",
+      "dateOfBirth": "1990-03-15",
+      "phoneNumber": "+90 5554567890",
+      "emailAddress": "mehmet.kara3@example.com",
+      "department": "Tech",
+      "position": "Medior"
+    },
+    {
+      "id": "4",
+      "firstName": "Ayşe",
+      "lastName": "Çelik",
+      "dateOfEmployment": "2021-09-12",
+      "dateOfBirth": "1994-06-20",
+      "phoneNumber": "+90 5319871234",
+      "emailAddress": "ayse.celik4@example.com",
+      "department": "Analytics",
+      "position": "Junior"
+    },
+    {
+      "id": "5",
+      "firstName": "Fatma",
+      "lastName": "Şahin",
+      "dateOfEmployment": "2017-02-23",
+      "dateOfBirth": "1987-12-11",
+      "phoneNumber": "+90 5302223344",
+      "emailAddress": "fatma.sahin5@example.com",
+      "department": "Tech",
+      "position": "Senior"
+    },
+    {
+      "id": "6",
+      "firstName": "Mustafa",
+      "lastName": "Arslan",
+      "dateOfEmployment": "2022-03-10",
+      "dateOfBirth": "1996-01-19",
+      "phoneNumber": "+90 5345556677",
+      "emailAddress": "mustafa.arslan6@example.com",
+      "department": "Analytics",
+      "position": "Medior"
+    },
+    {
+      "id": "7",
+      "firstName": "Zeynep",
+      "lastName": "Öztürk",
+      "dateOfEmployment": "2016-08-30",
+      "dateOfBirth": "1984-07-03",
+      "phoneNumber": "+90 5361112233",
+      "emailAddress": "zeynep.ozturk7@example.com",
+      "department": "Tech",
+      "position": "Senior"
+    },
+    {
+      "id": "8",
+      "firstName": "Burak",
+      "lastName": "Polat",
+      "dateOfEmployment": "2019-11-25",
+      "dateOfBirth": "1991-04-18",
+      "phoneNumber": "+90 5558889990",
+      "emailAddress": "burak.polat8@example.com",
+      "department": "Analytics",
+      "position": "Junior"
+    },
+    {
+      "id": "9",
+      "firstName": "Gamze",
+      "lastName": "Doğan",
+      "dateOfEmployment": "2018-05-14",
+      "dateOfBirth": "1990-09-08",
+      "phoneNumber": "+90 5324445566",
+      "emailAddress": "gamze.dogan9@example.com",
+      "department": "Tech",
+      "position": "Medior"
+    },
+    {
+      "id": "10",
+      "firstName": "Emre",
+      "lastName": "Koç",
+      "dateOfEmployment": "2020-12-03",
+      "dateOfBirth": "1993-02-14",
+      "phoneNumber": "+90 5301114455",
+      "emailAddress": "emre.koc10@example.com",
+      "department": "Analytics",
+      "position": "Senior"
+    }
+   
+  ]
+  
