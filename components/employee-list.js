@@ -1,120 +1,110 @@
 import { LitElement, html, css } from 'lit';
 import { employeeStore } from '../store/employeeStore.js';
+import './EmployeeHeader.js';
+import './EmployeeControls.js';
+import './EmployeeTable.js';
+import './EmployeeGrid.js';
 
-class EmployeeList extends LitElement {
+export class EmployeeList extends LitElement {
   static properties = {
+    view: { type: String },
     page: { type: Number },
     query: { type: String },
-    selected: { state: true },
+    selected: { type: Object },
   };
 
   static styles = css`
     :host {
-      display: block;
-      padding: 16px;
-    }
-
-    .controls {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 12px;
+      flex-direction: column;
+      height: 80vh; /* tam ekran yüksekliği */
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* scroll yok */
+      position: relative;
     }
 
-    table {
-      width: 100%;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      background: #ffffff;
-      border-collapse: collapse;
+    employee-header,
+    employee-controls {
+      flex-shrink: 0;
     }
 
-    thead {
-      background-color: #f8f8f8;
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* scroll yok */
+      position: relative;
     }
 
-    th, td {
-      text-align: center;
-      padding: 8px;
-      font-size: 14px;
+    .table-container {
+      
+      overflow: hidden; /* scroll yok */
+      background:white;
     }
 
-    th {
-      color: orange;
-      border-bottom: 2px solid #ccc;
-    }
-
-    td {
-      border-bottom: 1px solid #eee;
-    }
-
-    tr:hover td {
-      background: #fafafa;
-    }
-
-    .actions {
+    .pagination {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       justify-content: center;
-      gap: 0.5em;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      font-family: sans-serif;
+      font-size: 14px;
+      z-index: 10;
     }
 
-    .actions button {
-      padding: 0.5em 1em;
-      border-radius: 0.5em;
-      border: 1px solid #ddd;
+    .page-btn {
+      border: none;
+      background: #f3f3f3;
+      padding: 6px 10px;
+      border-radius: 50%;
       cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 32px;
+      height: 32px;
+      font-weight: bold;
     }
 
-    /* --- Responsive --- */
-    @media (max-width: 768px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-        width: 100%;
-        font-size:10px
-      }
+    .page-btn:hover {
+      background: #e2e2e2;
+    }
 
-      thead {
-        display: none; /* başlık gizleniyor */
-      }
+    .page-btn.active {
+      background: orange;
+      color: white;
+    }
 
-      tr {
-        margin-bottom: 12px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      }
+    .page-btn[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
-      td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 6px 8px;
-        border: none;
-      }
-
-      td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        color: #555;
-        flex: 1;
-        text-align: left;
-      }
-
-      td:last-child {
-        justify-content: center;
-      }
+    span {
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
     }
   `;
 
   constructor() {
     super();
-    this._employees = [];
-    this.pageSize = 8;
+    this.view = 'list';
     this.page = 1;
     this.query = '';
     this.selected = new Set();
+    this.pageSize = 8;
+    this._employees = [];
   }
 
   connectedCallback() {
@@ -131,87 +121,129 @@ class EmployeeList extends LitElement {
   }
 
   render() {
-    const filtered = this._employees.filter((e) => {
-      const q = this.query.trim().toLowerCase();
-      if (!q) return true;
-      return (
-        [e.firstName, e.lastName, e.emailAddress, e.department, e.position]
-          .join(' ')
-          .toLowerCase()
-          .includes(q)
-      );
-    });
-
+    const filtered = this._employees.filter((e) =>
+      Object.values(e).join(' ').toLowerCase().includes(this.query.toLowerCase())
+    );
     const totalPages = Math.max(1, Math.ceil(filtered.length / this.pageSize));
     const start = (this.page - 1) * this.pageSize;
     const pageItems = filtered.slice(start, start + this.pageSize);
 
-    const allSelected = pageItems.length > 0 && pageItems.every(e => this.selected.has(e.id));
-
     return html`
-      <div class="controls">
-        <input placeholder="Ara isim veya email" @input=${this._onSearch} />
-        <button @click=${() => (location.href = '/add')}>Add New</button>
-        <button ?disabled=${this.selected.size === 0} @click=${this._deleteSelected}>
-          Delete Selected (${this.selected.size})
-        </button>
-      </div>
+      <employee-header
+        .view=${this.view}
+        @view-change=${(e) => (this.view = e.detail)}
+      ></employee-header>
 
-      <table>
-        <thead>
-          <tr>
-            <th><input type="checkbox" .checked=${allSelected} @change=${(e) => this._toggleAll(e, pageItems)} /></th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Date of Employment</th>
-            <th>Date of Birth</th>
-            <th>Phone Number</th>
-            <th>Email Address</th>
-            <th>Department</th>
-            <th>Position</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${pageItems.map(
-            (e) => html`
-              <tr>
-                <td data-label="Select">
-                  <input type="checkbox" .checked=${this.selected.has(e.id)} @change=${(ev) => this._toggleOne(ev, e.id)} />
-                </td>
-                <td data-label="First Name">${e.firstName}</td>
-                <td data-label="Last Name">${e.lastName}</td>
-                <td data-label="Date of Employment">${e.dateOfEmployment}</td>
-                <td data-label="Date of Birth">${e.dateOfBirth}</td>
-                <td data-label="Phone Number">${e.phoneNumber}</td>
-                <td data-label="Email">${e.emailAddress}</td>
-                <td data-label="Department">${e.department}</td>
-                <td data-label="Position">${e.position}</td>
-                <td data-label="Actions" class="actions">
-                  <button @click=${() => this._onEdit(e.id)}>Edit</button>
-                  <button @click=${() => this._onDelete(e.id)}>Delete</button>
-                </td>
-              </tr>
-            `
-          )}
-        </tbody>
-      </table>
+      <employee-controls
+        .selectedCount=${this.selected.size}
+        @search=${(e) => (this.query = e.detail)}
+        @delete-selected=${this._deleteSelected}
+      ></employee-controls>
 
-      <div style="margin-top:12px">
-        Page ${this.page} / ${totalPages}
-        <button ?disabled=${this.page <= 1} @click=${() => this._goto(this.page - 1)}>Prev</button>
-        <button ?disabled=${this.page >= totalPages} @click=${() => this._goto(this.page + 1)}>Next</button>
+      <div class="content-wrapper">
+        <div class="table-container">
+          ${this.view === 'list'
+            ? html`
+                <employee-table
+                  .items=${pageItems}
+                  .selected=${this.selected}
+                  @toggle-one=${this._toggleOne}
+                  @toggle-all=${this._toggleAll}
+                  @delete=${(e) => this._onDelete(e.detail)}
+                  @edit=${(e) => this._onEdit(e.detail)}
+                ></employee-table>
+              `
+            : html`
+                <employee-grid
+                  .items=${pageItems}
+                  @edit=${(e) => this._onEdit(e.detail)}
+                  @delete=${(e) => this._onDelete(e.detail)}
+                ></employee-grid>
+              `}
+        </div>
+
+      
       </div>
+      ${this._renderPagination(totalPages)}
     `;
   }
 
-  _onSearch(e) {
-    this.query = e.target.value;
-    this.page = 1;
+  _renderPagination(totalPages) {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, this.page - Math.floor(maxVisible / 2));
+    let end = start + maxVisible - 1;
+    if (end > totalPages) {
+      end = totalPages;
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    // Önceki sayfa
+    pages.push(html`
+      <button
+        class="page-btn"
+        ?disabled=${this.page === 1}
+        @click=${() => (this.page = Math.max(1, this.page - 1))}
+      >&lt;</button>
+    `);
+
+    // İlk sayfa ve "..."
+    if (start > 1) {
+      pages.push(html`
+        <button class="page-btn" @click=${() => (this.page = 1)}>1</button>
+      `);
+      if (start > 2) pages.push(html`<span>...</span>`);
+    }
+
+    // Orta sayfalar
+    for (let i = start; i <= end; i++) {
+      pages.push(html`
+        <button
+          class="page-btn ${this.page === i ? 'active' : ''}"
+          @click=${() => (this.page = i)}
+        >
+          ${i}
+        </button>
+      `);
+    }
+
+    // Son sayfa ve "..."
+    if (end < totalPages) {
+      if (end < totalPages - 1) pages.push(html`<span>...</span>`);
+      pages.push(html`
+        <button class="page-btn" @click=${() => (this.page = totalPages)}>
+          ${totalPages}
+        </button>
+      `);
+    }
+
+    // Sonraki sayfa
+    pages.push(html`
+      <button
+        class="page-btn"
+        ?disabled=${this.page === totalPages}
+        @click=${() => (this.page = Math.min(totalPages, this.page + 1))}
+      >&gt;</button>
+    `);
+
+    return html`<div class="pagination">${pages}</div>`;
   }
 
-  _goto(p) {
-    this.page = p;
+  _toggleOne(e) {
+    const { id, checked } = e.detail;
+    if (checked) this.selected.add(id);
+    else this.selected.delete(id);
+    this.requestUpdate();
+  }
+
+  _toggleAll(e) {
+    const checked = e.detail;
+    const filtered = this._employees.filter((emp) =>
+      Object.values(emp).join(' ').toLowerCase().includes(this.query.toLowerCase())
+    );
+    if (checked) filtered.forEach((emp) => this.selected.add(emp.id));
+    else filtered.forEach((emp) => this.selected.delete(emp.id));
+    this.requestUpdate();
   }
 
   _onEdit(id) {
@@ -219,28 +251,14 @@ class EmployeeList extends LitElement {
     window.dispatchEvent(new PopStateEvent('popstate'));
   }
 
-  async _onDelete(id) {
-    const confirmed = confirm('Delete this record?');
-    if (!confirmed) return;
+  _onDelete(id) {
+    if (!confirm('Delete this record?')) return;
     employeeStore.remove(id);
     this.selected.delete(id);
   }
 
-  _toggleOne(e, id) {
-    if (e.target.checked) this.selected.add(id);
-    else this.selected.delete(id);
-    this.requestUpdate();
-  }
-
-  _toggleAll(e, items) {
-    if (e.target.checked) items.forEach((emp) => this.selected.add(emp.id));
-    else items.forEach((emp) => this.selected.delete(emp.id));
-    this.requestUpdate();
-  }
-
   _deleteSelected() {
-    const confirmed = confirm(`Delete ${this.selected.size} selected records?`);
-    if (!confirmed) return;
+    if (!confirm(`Delete ${this.selected.size} selected records?`)) return;
     [...this.selected].forEach((id) => employeeStore.remove(id));
     this.selected.clear();
   }
