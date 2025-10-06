@@ -75,6 +75,7 @@ export class EmployeeList extends LitElement {
       min-width: 32px;
       height: 32px;
       font-weight: bold;
+      color:orange;
     }
 
     .page-btn:hover {

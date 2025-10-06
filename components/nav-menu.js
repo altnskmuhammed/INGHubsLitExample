@@ -68,7 +68,7 @@ a{
 
         <div class="menu-links">
           <a @click=${() => Router.go('/')}>Employees</a>
-          <a @click=${() => Router.go('/employee/new')}>Add New</a>
+          <a @click=${() => Router.go('/add')}>Add New</a>
         </div>
       </nav>
     `;
