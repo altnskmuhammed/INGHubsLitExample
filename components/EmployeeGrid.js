@@ -3,14 +3,23 @@ import { LitElement, html, css } from 'lit';
 export class EmployeeGrid extends LitElement {
   static properties = {
     items: { type: Array },
+    editingEmployee: { state: true },
   };
 
   static styles = css`
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 12px;
       padding: 8px;
+      width: 100vh;
+      margin: 0 auto; /* grid container ortalansın */
+    }
+
+    .pair {
+      display: flex;
+      align-items: baseline;
+      flex-direction: column;      
     }
 
     .card {
@@ -18,7 +27,43 @@ export class EmployeeGrid extends LitElement {
       border-radius: 8px;
       padding: 12px;
       background: #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      width: 50vh;
+      height: 28vh;
+    }
+
+    .label { font-weight: bold; color: #555; }
+    .value { text-align: right; color: #333; }
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .modal-content input {
+      padding: 6px;
+      font-size: 14px;
+      width: 100%;
+    }
+
+    .modal-content label {
+      font-weight: bold;
+      color: #555;
     }
 
     .actions {
@@ -27,41 +72,121 @@ export class EmployeeGrid extends LitElement {
       margin-top: 8px;
     }
 
-    button {
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-size: 18px;
-    }
+    button { border: none; background: transparent; cursor: pointer; font-size: 16px; }
   `;
-
+ constructor() {
+  super();
+  this.items = [];
+  this.editingEmployee = null;
+}
   render() {
     return html`
       <div class="grid">
-        ${this.items.map(
-          (e) => html`
-            <div class="card">
-              <h3>${e.firstName} ${e.lastName}</h3>
-              <p>${e.department} - ${e.position}</p>
-              <p>${e.emailAddress}</p>
-              <div class="actions">
-                <button @click=${() => this._edit(e.id)}>✏️</button>
-                <button @click=${() => this._delete(e.id)}>🗑️</button>
-              </div>
+        ${this.items.map(e => html`
+          <div class="card">
+            <div class="pair">
+              <div class="label">First Name:</div>
+              <div class="value">${e.firstName}</div>
             </div>
-          `
-        )}
+            <div class="pair">
+              <div class="label">Last Name:</div>
+              <div class="value">${e.lastName}</div>
+            </div>
+            <div class="pair">
+              <div class="label">Employment:</div>
+              <div class="value">${e.dateOfEmployment}</div>
+            </div>
+            <div class="pair">
+              <div class="label">Birth:</div>
+              <div class="value">${e.dateOfBirth}</div>
+            </div>
+            <div class="pair">
+              <div class="label">Phone:</div>
+              <div class="value">${e.phoneNumber}</div>
+            </div>
+            <div class="pair">
+              <div class="label">Email:</div>
+              <div class="value">${e.emailAddress}</div>
+            </div>
+            <div class="pair">
+              <div class="label">Department:</div>
+              <div class="value">${e.department}</div>
+            </div>
+            <div class="pair">
+              <div class="label">Position:</div>
+              <div class="value">${e.position}</div>
+            </div>
+
+            <div class="actions">
+              <icon-button
+                icon="edit"
+                title="Edit"
+                text="Edit"
+                style="background-color: #0000CD; color: white; border-radius:9px;"
+                @icon-click=${() => this._startEdit(e)}
+              ></icon-button>
+
+              <icon-button
+                icon="delete"
+                title="Delete"
+                text="Delete"
+                style="background-color: #FF0000; color: white; border-radius:9px;"
+                @icon-click=${() => this._delete(e.id)}
+              ></icon-button>
+            </div>
+          </div>
+        `)}
       </div>
+      ${this.editingEmployee ? html`
+        <div class="modal">
+          <div class="modal-content">
+            <h3>Edit Employee</h3>
+
+            ${Object.keys(this.editingEmployee).filter(k => k !== 'id').map(key => html`
+              <label>${this._formatLabel(key)}</label>
+              <input type="text" .value=${this.editingEmployee[key] || ''} 
+                     @input=${e => this._updateField(key, e.target.value)}>
+            `)}
+
+            <div style="margin-top:12px; display:flex; justify-content:space-between;">
+              <button class="edit-btn" @click=${this._saveEdit}>Save</button>
+              <button class="delete-btn" @click=${this._cancelEdit}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      ` : ''}
     `;
   }
 
-  _edit(id) {
-    this.dispatchEvent(new CustomEvent('edit', { detail: id }));
+
+  _formatLabel(key) {
+    // firstName -> First Name
+    return key.replace(/([A-Z])/g, ' $1')
+              .replace(/^./, str => str.toUpperCase());
   }
 
   _delete(id) {
     this.dispatchEvent(new CustomEvent('delete', { detail: id }));
   }
+
+  _startEdit(employee) {
+    this.editingEmployee = { ...employee }; // clone
+  }
+
+  _updateField(field, value) {
+    this.editingEmployee = { ...this.editingEmployee, [field]: value };
+  }
+
+  _saveEdit() {
+    store.updateEmployee(this.editingEmployee);
+    this.items = this.items.map(e => e.id === this.editingEmployee.id ? this.editingEmployee : e);
+    this.editingEmployee = null;
+  }
+
+  _cancelEdit() {
+    this.editingEmployee = null;
+  }
 }
+
 
 customElements.define('employee-grid', EmployeeGrid);

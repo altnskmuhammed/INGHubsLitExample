@@ -135,8 +135,19 @@ export class EmployeeTable extends LitElement {
                 <td data-label="Department">${e.department}</td>
                 <td data-label="Position">${e.position}</td>
                 <td class="actions" data-label="Actions">
-                  <button @click=${() => this._edit(e.id)}>Edit</button>
-                  <button @click=${() => this._delete(e.id)}>Delete</button>
+                      <icon-button
+            icon="edit"
+            title="Edit"
+          color=${this.view =  '#fa8c16'}
+            @icon-click=${() => this._edit(e.id)}
+          ></icon-button>
+                 
+                             <icon-button
+            icon="delete"
+            title="Delete"
+          color=${this.view =  '#FF0000'}
+            @icon-click=${() => this._delete(e.id)}
+          ></icon-button>
                 </td>
               </tr>
             `

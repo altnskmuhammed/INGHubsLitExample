@@ -1,156 +1,73 @@
 import { LitElement, html, css } from 'lit';
-import { employeeStore } from '../store/employeeStore.js';
+import store from '../store/employeeStore.js';
 
-export class EmployeeForm extends LitElement {
+export class EmployeeFormPage extends LitElement {
   static properties = {
-    employeeId: { type: String, reflect: true }, // attribute reflection önemli
-    _employee: { state: true }
+    employeeId: { type: String },
+    employee: { state: true },
   };
 
   static styles = css`
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-width: 400px;
-    }
-    label {
-      display: flex;
-      flex-direction: column;
-      font-weight: 500;
-    }
-    input, select {
-      padding: 6px;
-      font-size: 14px;
-    }
-    button {
-      padding: 8px 12px;
-      cursor: pointer;
-    }
+    .form-container { max-width:500px; margin:20px auto; display:flex; flex-direction:column; gap:12px; padding:20px; border:1px solid #ddd; border-radius:8px; background:#fff; }
+    label { font-weight:bold; }
+    input { padding:6px; font-size:14px; width:100%; }
+    button { padding:8px 16px; font-size:14px; border-radius:4px; border:none; cursor:pointer; }
+    .save-btn { background-color:#1890ff; color:white; }
+    .cancel-btn { background-color:#ff4d4f; color:white; }
   `;
 
   constructor() {
     super();
     this.employeeId = null;
-    this._employee = {};
+    this.employee = { firstName:'', lastName:'', dateOfEmployment:'', dateOfBirth:'', phoneNumber:'', emailAddress:'', department:'', position:'' };
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this._loadEmployee();
-  }
+    const match = window.location.pathname.match(/\/edit\/(.+)/);
+    if(match) this.employeeId = match[1];
 
-  updated(changedProps) {
-    if (changedProps.has('employeeId')) {
-      this._loadEmployee();
-    }
-  }
-
-  _loadEmployee() {
-    if (this.employeeId) {
-      this._employee = employeeStore.find(this.employeeId) || {};
-    } else {
-      this._employee = {};
+    if(this.employeeId) {
+      const emp = store.getEmployeeById(this.employeeId);
+      if(emp) this.employee = {...emp};
     }
   }
 
   render() {
-    const e = this._employee || {};
     return html`
-      <h2>${this.employeeId ? 'Edit' : 'Add'} Employee</h2>
-      <form @submit=${this._onSubmit}>
-        <label>
-          First Name
-          <input name="firstName" .value=${e.firstName || ''} required minlength="2" />
-        </label>
-        <label>
-          Last Name
-          <input name="lastName" .value=${e.lastName || ''} required minlength="2" />
-        </label>
-        <label>
-          Date of Birth
-          <input name="dob" type="date" .value=${e.dob || ''} required />
-        </label>
-        <label>
-          Date of Employment
-          <input name="employmentDate" type="date" .value=${e.employmentDate || ''} required />
-        </label>
-        <label>
-          Phone
-          <input name="phone" .value=${e.phone || ''} required />
-        </label>
-        <label>
-          Email
-          <input name="email" type="email" .value=${e.email || ''} required />
-        </label>
-        <label>
-          Department
-          <select name="department" .value=${e.department || 'Analytics'}>
-            <option>Analytics</option>
-            <option>Tech</option>
-          </select>
-        </label>
-        <label>
-          Position
-          <select name="position" .value=${e.position || 'Junior'}>
-            <option>Junior</option>
-            <option>Medior</option>
-            <option>Senior</option>
-          </select>
-        </label>
-        <div style="display:flex; gap:8px">
-          <button type="submit">${this.employeeId ? 'Update' : 'Create'}</button>
-          <button type="button" @click=${()=>location.href='/'}>Cancel</button>
+      <div class="form-container">
+        <h3>${this.employeeId ? 'Edit Employee' : 'Add Employee'}</h3>
+        ${Object.keys(this.employee).map(key => html`
+          <label>${this._formatLabel(key)}</label>
+          <input type="text" .value=${this.employee[key]} @input=${e => this._updateField(key, e.target.value)}>
+        `)}
+        <div style="display:flex; justify-content:space-between;">
+          <button class="save-btn" @click=${this._save}>Save</button>
+          <button class="cancel-btn" @click=${this._cancel}>Cancel</button>
         </div>
-      </form>
+      </div>
     `;
   }
 
-  _validate(data) {
-    const errors = [];
-    if (new Date(data.dob) > new Date()) errors.push('DOB cannot be in the future');
-    if (new Date(data.employmentDate) > new Date()) errors.push('Employment date cannot be in the future');
-    if (new Date(data.employmentDate) < new Date(data.dob)) errors.push('Employment date must be after DOB');
-
-    const existing = employeeStore.list().find(
-      (e) => e.email.toLowerCase() === data.email.toLowerCase() && e.id !== this.employeeId
-    );
-    if (existing) errors.push('Email already used');
-
-    return errors;
+  _formatLabel(key) {
+    return key.replace(/([A-Z])/g,' $1').replace(/^./, str => str.toUpperCase());
   }
 
-  _onSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const data = {
-      firstName: form.firstName.value.trim(),
-      lastName: form.lastName.value.trim(),
-      dob: form.dob.value,
-      employmentDate: form.employmentDate.value,
-      phone: form.phone.value.trim(),
-      email: form.email.value.trim(),
-      department: form.department.value,
-      position: form.position.value
-    };
+  _updateField(key, value) {
+    this.employee = { ...this.employee, [key]: value };
+  }
 
-    const errs = this._validate(data);
-    if (errs.length) {
-      alert('Validation errors:\n' + errs.join('\n'));
-      return;
-    }
+  _save() {
+    if(this.employeeId) store.updateEmployee(this.employee);
+    else store.addEmployee(this.employee);
+    window.history.pushState({}, '', '/');
+    window.dispatchEvent(new Event('location-changed'));
+  }
 
-    const confirmed = confirm(this.employeeId ? 'Update employee?' : 'Create employee?');
-    if (!confirmed) return;
-
-    if (this.employeeId) {
-      employeeStore.update(this.employeeId, data);
-    } else {
-      employeeStore.add(data);
-    }
-
-    location.href = '/';
+  _cancel() {
+    window.history.pushState({}, '', '/');
+    window.dispatchEvent(new Event('location-changed'));
   }
 }
 
-customElements.define('employee-form', EmployeeForm);
+customElements.define('employee-form-page', EmployeeFormPage);

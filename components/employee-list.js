@@ -14,14 +14,15 @@ export class EmployeeList extends LitElement {
   };
 
   static styles = css`
+   @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
     :host {
       display: flex;
       flex-direction: column;
       height: 80vh; /* tam ekran yüksekliği */
       margin: 0;
       padding: 0;
-      overflow: hidden; /* scroll yok */
-      position: relative;
+      
+    
     }
 
     employee-header,

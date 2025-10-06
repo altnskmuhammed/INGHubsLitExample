@@ -1,4 +1,4 @@
-export class EmployeeStore {
+export default class EmployeeStore {
     constructor() {
         this.key = 'employees_v1';
         this._listeners = new Set();

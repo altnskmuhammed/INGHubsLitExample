@@ -1,13 +1,13 @@
 import { LitElement, html, css } from 'lit';
+import './icon-button.js';
 
 export class EmployeeHeader extends LitElement {
   static properties = {
     view: { type: String },
   };
-  static shadowRootOptions = { ...LitElement.shadowRootOptions, mode: 'open', delegatesFocus: true };
 
   static styles = css`
-    @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
 
     .header {
       display: flex;
@@ -33,43 +33,40 @@ export class EmployeeHeader extends LitElement {
       gap: 8px;
     }
 
-    .view-toggle button {
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-size: 20px;
-      padding: 4px;
-      border-radius: 6px;
-      transition: background 0.2s;
-    }
-
-    .view-toggle button:hover {
-      background: #f0f0f0;
+    /* Aktif buton arka planı */
+    icon-button.active::part(button) {
+      color: rgba(255, 170, 0, 0.15);
+      transform: scale(1.05);
     }
   `;
-
-
 
   render() {
     return html`
       <div class="header">
         <h2>Employee List</h2>
         <div class="view-toggle">
-        <button @click=${() => this._change('list')} title="List View">
-        <span class="material-symbols-outlined">
-menu
-</span>
-        </button>
-        <button @click=${() => this._change('grid')} title="Grid View">
-          <span class="material-icons">grid_view</span>
-        </button>
-      </div>
+          <icon-button
+            icon="menu"
+            title="List View"
+            color=${this.view === 'list' ? 'darkorange' : 'orange'}
+            class=${this.view === 'list' ? 'active' : ''}
+            @icon-click=${() => this._change('list')}
+          ></icon-button>
 
+          <icon-button
+            icon="grid_view"
+            title="Grid View"
+            color=${this.view === 'grid' ? 'darkorange' : 'orange'}
+            class=${this.view === 'grid' ? 'active' : ''}
+            @icon-click=${() => this._change('grid')}
+          ></icon-button>
+        </div>
       </div>
     `;
   }
 
   _change(view) {
+    this.view = view;
     this.dispatchEvent(new CustomEvent('view-change', { detail: view }));
   }
 }
