@@ -79,7 +79,7 @@ export class EmployeeFormPage extends LitElement {
     .phone { grid-area: phone; }
     .email { grid-area: email; }
     .department { grid-area: department; }
-    .position { }
+    .position {         }
     .actions { grid-area: actions; text-align: center; margin-top: 10px; }
 
     .btn {

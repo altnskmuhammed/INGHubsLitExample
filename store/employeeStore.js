@@ -44,9 +44,7 @@ export default class EmployeeStore {
         this._emit();
         return emp;
     }
-    getEmployeeById(id) {
-        return this._data.find(e => e.id === id);
-      }
+    
       
     update(id, patch) {
         const i = this._data.findIndex(e => e.id === id);
