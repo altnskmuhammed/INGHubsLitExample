@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { employeeStore } from '../store/employeeStore.js';
 
 export class EmployeeGrid extends LitElement {
   static properties = {
@@ -137,55 +138,37 @@ export class EmployeeGrid extends LitElement {
           </div>
         `)}
       </div>
-      ${this.editingEmployee ? html`
-        <div class="modal">
-          <div class="modal-content">
-            <h3>Edit Employee</h3>
-
-            ${Object.keys(this.editingEmployee).filter(k => k !== 'id').map(key => html`
-              <label>${this._formatLabel(key)}</label>
-              <input type="text" .value=${this.editingEmployee[key] || ''} 
-                     @input=${e => this._updateField(key, e.target.value)}>
-            `)}
-
-            <div style="margin-top:12px; display:flex; justify-content:space-between;">
-              <button class="edit-btn" @click=${this._saveEdit}>Save</button>
-              <button class="delete-btn" @click=${this._cancelEdit}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      ` : ''}
+    
     `;
   }
 
 
-  _formatLabel(key) {
-    // firstName -> First Name
-    return key.replace(/([A-Z])/g, ' $1')
-              .replace(/^./, str => str.toUpperCase());
-  }
+
 
   _delete(id) {
     this.dispatchEvent(new CustomEvent('delete', { detail: id }));
   }
-
   _startEdit(employee) {
-    this.editingEmployee = { ...employee }; // clone
+    if (!employee) return;
+  
+    // 1️⃣ Store’a ve localStorage’a kaydet
+    employeeStore.selectedEmployee = employee;
+    localStorage.setItem("editItem", JSON.stringify(employee));
+  
+    // 2️⃣ Sayfayı edit route’una yönlendir
+    const id = employee.id || employee._id;
+    if (id) {
+      window.history.pushState({}, '', `/edit/${id}`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    } else {
+      console.warn("Employee ID bulunamadı!");
+    }
   }
+  
 
-  _updateField(field, value) {
-    this.editingEmployee = { ...this.editingEmployee, [field]: value };
-  }
 
-  _saveEdit() {
-    store.updateEmployee(this.editingEmployee);
-    this.items = this.items.map(e => e.id === this.editingEmployee.id ? this.editingEmployee : e);
-    this.editingEmployee = null;
-  }
 
-  _cancelEdit() {
-    this.editingEmployee = null;
-  }
+
 }
 
 

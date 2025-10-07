@@ -249,9 +249,19 @@ export class EmployeeList extends LitElement {
   }
 
   _onEdit(id) {
+    // Seçilen employee nesnesini bul
+    const employee = this._employees.find(emp => emp._id === id || emp.id === id);
+  
+    // Global store’a ata
+    employeeStore.selectedEmployee = employee;
+    localStorage.setItem("editItem", JSON.stringify(employee));
+
+  
+    // Sayfayı yönlendir
     window.history.pushState({}, '', `/edit/${id}`);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }
+  
 
   _onDelete(id) {
     if (!confirm('Delete this record?')) return;

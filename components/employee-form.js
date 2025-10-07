@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import store from '../store/employeeStore.js';
 
+
 export class EmployeeFormPage extends LitElement {
   static properties = {
     employeeId: { type: String },
@@ -11,7 +12,7 @@ export class EmployeeFormPage extends LitElement {
     :host {
       display: block;
       background: #f7f8fa;
-      min-height: 100vh;
+    
       padding: 32px;
       font-family: 'Inter', sans-serif;
     }
@@ -40,7 +41,7 @@ export class EmployeeFormPage extends LitElement {
         "birth phone email"
         "department position position"
         "actions actions actions";
-      gap: 20px;
+      gap: 80px;
     }
 
     .field {
@@ -78,7 +79,7 @@ export class EmployeeFormPage extends LitElement {
     .phone { grid-area: phone; }
     .email { grid-area: email; }
     .department { grid-area: department; }
-    .position { grid-area: position; }
+    .position { }
     .actions { grid-area: actions; text-align: center; margin-top: 10px; }
 
     .btn {
@@ -136,17 +137,45 @@ export class EmployeeFormPage extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+  
     const match = window.location.pathname.match(/\/edit\/(.+)/);
-    if (match) this.employeeId = match[1];
-    if (this.employeeId) {
-      const emp = store.getEmployeeById?.(this.employeeId);
-      if (emp) this.employee = { ...emp };
+    if (match) {
+      this.employeeId = match[1];
+      console.log("🆔 Edit sayfasındaki ID:", this.employeeId);
+  
+     
+      let emp = store.selectedEmployee || store.getEmployeeById?.(this.employeeId);
+  
+      
+      if (!emp) {
+        const saved = localStorage.getItem("editItem");
+        if (saved) {
+          try {
+            emp = JSON.parse(saved);
+            console.log("💾 LocalStorage’dan yüklendi:", emp);
+          } catch (e) {
+            console.warn("LocalStorage parse hatası:", e);
+          }
+        }
+      }
+  
+      
+      if (emp) {
+        this.employee = { ...emp };
+        console.log("✅ Formda gösterilecek employee:", this.employee);
+      } else {
+        console.warn("⚠️ Employee store veya localStorage’ta bulunamadı.");
+      }
+    } else {
+      console.log("ℹ️ Yeni kayıt (add mode).");
     }
   }
+  
+  
 
   render() {
     return html`
-     <h2>${this.employeeId ? 'Edit Employee' : 'Add Employee'}</h2>
+     <h2>${this.employee ? 'Edit Employee' : 'Add Employee'}</h2>
       <div class="container">
        
 
@@ -190,10 +219,10 @@ export class EmployeeFormPage extends LitElement {
             <label>Position</label>
             <select @change=${e => this._updateField('position', e.target.value)}>
               <option>Please Select</option>
-              <option ?selected=${this.employee.position === 'Manager'}>Manager</option>
-              <option ?selected=${this.employee.position === 'Engineer'}>Engineer</option>
-              <option ?selected=${this.employee.position === 'Technician'}>Technician</option>
-              <option ?selected=${this.employee.position === 'HR'}>HR</option>
+              <option ?selected=${this.employee.position === 'Junior'}>Junior</option>
+              <option ?selected=${this.employee.position === 'Senior'}>Senior</option>
+              <option ?selected=${this.employee.position === 'Midior'}>Midior</option>
+              
             </select>
           </div>
 

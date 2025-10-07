@@ -1,10 +1,27 @@
 import { LitElement, html, css } from 'lit';
 import './icon-button.js';
+import { t } from '../i18n.js';
 
 export class EmployeeHeader extends LitElement {
   static properties = {
     view: { type: String },
+    title: { type: String }, 
   };
+  s
+connectedCallback() {
+  super.connectedCallback();
+  window.addEventListener('lang-changed', this._onLangChange.bind(this));
+}
+
+disconnectedCallback() {
+  super.disconnectedCallback();
+  window.removeEventListener('lang-changed', this._onLangChange.bind(this));
+}
+
+_onLangChange(e) {
+  this.requestUpdate(); 
+}
+
 
   static styles = css`
     @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
@@ -43,7 +60,7 @@ export class EmployeeHeader extends LitElement {
   render() {
     return html`
       <div class="header">
-        <h2>Employee List</h2>
+        <h2>${t('title')}</h2>
         <div class="view-toggle">
           <icon-button
             icon="menu"
