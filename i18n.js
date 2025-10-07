@@ -8,7 +8,19 @@ const messages = {
     listView: 'List View',
     gridView: 'Grid View',
     addEmployee: 'Add Employee',
+    addNew: 'Add New',
+
+    firstName: 'First Name',
+    lastName: 'Last Name',
+    dateOfEmployment: 'Date of Employment',
+    dateOfBirth: 'Date of Birth',
+    phone: 'Phone',
+    email: 'Email',
+    department: 'Department',
+    position: 'Position',
+    actions: 'Actions',
   },
+
   tr: {
     title: 'Çalışan Listesi',
     home: 'Ana Sayfa',
@@ -16,8 +28,21 @@ const messages = {
     listView: 'Liste Görünümü',
     gridView: 'Grid Görünümü',
     addEmployee: 'Çalışan Ekle',
+    addNew: 'Yeni Ekle',
+
+    
+    firstName: 'Ad',
+    lastName: 'Soyad',
+    dateOfEmployment: 'İşe Başlama Tarihi',
+    dateOfBirth: 'Doğum Tarihi',
+    phone: 'Telefon',
+    email: 'E-posta',
+    department: 'Departman',
+    position: 'Pozisyon',
+    actions: 'İşlemler',
   }
 };
+
 
 export function getLang() {
   return document.documentElement.lang || store.getState().ui.lang || 'en';

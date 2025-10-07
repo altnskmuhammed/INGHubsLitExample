@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { Router } from '@vaadin/router';
-import { changeLang } from '../i18n';
+import { changeLang , t } from '../i18n.js';
 class NavMenu extends LitElement {
   static properties = {
     currentLang: { state: true },
@@ -96,7 +96,19 @@ nav {
   toggleDropdown() {
     this.shadowRoot.querySelector('.lang-options').classList.toggle('show');
   }
-
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('lang-changed', this._onLangChange.bind(this));
+  }
+  
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('lang-changed', this._onLangChange.bind(this));
+  }
+  
+  _onLangChange(e) {
+    this.requestUpdate(); 
+  }
   selectLang(lang) {
     this.currentLang = lang;
     this.toggleDropdown();
@@ -121,8 +133,8 @@ nav {
         </div>
 
         <div class="menu-links">
-          <a @click=${() => Router.go('/')}>Employees</a>
-          <a @click=${() => Router.go('/add')}>Add New</a>
+          <a @click=${() => Router.go('/')}>${t('employees')}</a>
+          <a @click=${() => Router.go('/add')}>${t('addEmployee')}</a>
 
           <div class="lang-dropdown" @click=${this.toggleDropdown}>
             <img src="${flags[this.currentLang]}" alt="${this.currentLang}" />

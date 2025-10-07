@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { t } from '../i18n';
 
 export class EmployeeTable extends LitElement {
   static properties = {
@@ -104,15 +105,15 @@ export class EmployeeTable extends LitElement {
                 @change=${(e) => this._toggleAll(e)}
               />
             </th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Date of Employment</th>
-            <th>Date of Birth</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Department</th>
-            <th>Position</th>
-            <th>Actions</th>
+            <th>${t('firstName')}</th>
+            <th>${t('lastName')}</th>
+            <th>${t('dateOfEmployment')}</th>
+            <th>${t('dateOfBirth')}</th>
+            <th>${t('phone')}</th>
+            <th>${t('email')}</th>
+            <th>${t('department')}</th>
+            <th>${t('position')}</th>
+            <th>${t('actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -156,7 +157,20 @@ export class EmployeeTable extends LitElement {
       </table>
     `;
   }
-
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('lang-changed', this._onLangChange.bind(this));
+  }
+  
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('lang-changed', this._onLangChange.bind(this));
+  }
+  
+  _onLangChange(e) {
+    this.requestUpdate(); 
+  }
+  
   _toggleOne(e, id) {
     this.dispatchEvent(
       new CustomEvent('toggle-one', { detail: { id, checked: e.target.checked } })
